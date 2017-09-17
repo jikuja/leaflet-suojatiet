@@ -50,11 +50,9 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
   }).setView([60.440963, 22.25122], 10)
   var searchParams = new URL(window.location.href).searchParams
 
-  var radius = function (zoom) { // spiderify/clusterify only overlapping markers when zoom >= 18
-    if (zoom >= 16) {
-      return 5
-    }
-    return 50
+  var radius = function (zoom) { //
+    // clustering is fully disabled by disableClusteringAtZoom option at level xxx
+    return 80
   }
 
   // log zoom level changes
@@ -80,7 +78,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
     // attribution in geojsonLayer is ignored => do it here
     attribution: signAttribution,
     maxClusterRadius: radius,
-    spiderfyOnMaxZoom: false  // no need to spiderify
+    disableClusteringAtZoom: 17
   })
   mymap.addLayer(clusterGroup)
 
