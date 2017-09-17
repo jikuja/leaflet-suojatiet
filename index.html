@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2017 jikuja
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the “Software”), to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+-->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.1.0/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.1.0/dist/MarkerCluster.Default.css">
+
+    <!-- leaflet plugins -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.1.0/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/leaflet-ajax@2.1.0/dist/leaflet.ajax.min.js"></script>
+    <script src="https://cdn.rawgit.com/bbecquet/Leaflet.RotatedMarker/fe2b1c57/leaflet.rotatedMarker.js"></script>
+    <title>Title</title>
+</head>
+
+<body>
+<!-- github fork ribbon -->
+<a href="https://github.com/jikuja/leaflet-suojatiet"><img
+        style="position: absolute; top: 0; right: 0; border: 0;z-index: 9999;"
+        src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67"
+        alt="Fork me on GitHub"
+        data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
+<div id="mapid" style="height: 600px;"></div>
+
+<script>
+  var signAttribution =
+    'Sign data &copy; <a href="http://www.lounaistieto.fi/blog/2016/03/30/turun-kaupungin-liikennemerkit/">Turun kaupunki</a>, ' +
+    '<a href="https://creativecommons.org/licences/by/4.0/deed.fi">CC BY 4.0</a>'
+
+  var mymap = L.map('mapid', {
+    maxZoom: 19
+  }).setView([60.440963, 22.25122], 10)
+  var searchParams = new URL(window.location.href).searchParams
+
+  var radius = function (zoom) { // spiderify/clusterify only overlapping markers when zoom >= 18
+    if (zoom >= 16) {
+      return 5
+    }
+    return 50
+  }
+
+  // log zoom level changes
+  mymap.on('zoomend', function (e) {
+    console.log('Zoom level: %s', e.target._zoom)
+  })
+
+  // create map layer
+  var osmLayer = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution:
+    'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+    '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+    id: 'mapbox.streets'
+  })
+
+  // make layer visible asap
+  osmLayer.addTo(mymap)
+
+
+  // add cluster layer
+  var clusterGroup = L.markerClusterGroup({
+    // attribution in geojsonLayer is ignored => do it here
+    attribution: signAttribution,
+    maxClusterRadius: radius,
+    spiderfyOnMaxZoom: false  // no need to spiderify
+  })
+  mymap.addLayer(clusterGroup)
+
+  var icon = new L.Icon.Default()
+  icon.options.shadowSize = [0,0]
+  icon.options.shadowUrl = ""
+
+  // load geojson data into
+  var geojsonLayer = new L.GeoJSON.AJAX('suojatiet.geojson', {
+    pointToLayer: function(geoJsonPoint, latlng) {
+      marker =  L.marker(latlng, {icon: icon})
+      marker.setRotationAngle(geoJsonPoint['properties']['geometry_d'])
+      return marker
+    }
+  })
+  geojsonLayer.on('click', onMarkerClick)
+  geojsonLayer.on('data:loaded', function () {
+    // add geojson layer into cluster layer after data is loaded
+    clusterGroup.addLayer(geojsonLayer) // refresh()!?
+  })
+
+  function onMarkerClick (e) {
+    var prop = e.layer.feature.properties
+    console.log(prop)
+  }
+</script>
+</body>
+
+</html>
