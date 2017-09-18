@@ -4,6 +4,7 @@ Yksinkertainen visualisointidemo Turun kaupungin liikennemerkkidatasta.
 
 Data yksinkertaistettu .shp-tiedostosta komennolla: `ogr2ogr.exe -f GeoJSON -sql "select geometry_d from turun_liikennemerkit_3877 where signtype='511'"  -lco RFC7946=YES suojaties.geojson turun_liikennemerkit_3877.shp`
 
+Nuolen suunta kuvaa katselusuuntaa, osoittaa kohti merkkiä ja nuolen kärki on merkin ilmoitetussa koordinaateissa. 
 
 # Lisenssi
  * Koodi: MIT 

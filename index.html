@@ -82,9 +82,12 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
   })
   mymap.addLayer(clusterGroup)
 
-  var icon = new L.Icon.Default()
-  icon.options.shadowSize = [0,0]
-  icon.options.shadowUrl = ""
+  var icon = new L.icon({
+    iconUrl: 'arrow.png',
+    iconSize:    [25, 41],
+    iconAnchor:  [12, 1]
+  })
+
 
   // load geojson data into
   var geojsonLayer = new L.GeoJSON.AJAX('suojatiet.geojson', {
