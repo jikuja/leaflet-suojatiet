@@ -38,8 +38,25 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
         src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67"
         alt="Fork me on GitHub"
         data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
-<div id="mapid" style="height: 600px;"></div>
 
+<div id="mapid" style="height: 600px;"></div> <!-- map goes here-->
+
+<!-- short description for the page -->
+<h1>Suojatiet kartalla</h1>
+<p>
+    <small>
+        Demo for <a href="http://www.lounaistieto.fi/blog/2016/03/30/turun-kaupungin-liikennemerkit/">traffic sign data</a>
+        provided by City of Turku with CC4 BY 1.0 license.<br>
+
+        This demo uses <a href="https://leafletjs.com">Leaflet</a>,
+        <a href="https://github.com/Leaflet/Leaflet.markercluster">Leaflet.Markercluster</a> and
+        <a href="https://github.com/bbecquet/Leaflet.RotatedMarker">Leaflet.RotatedMarker</a> for visualization.
+        <a href="http://www.gdal.org/ogr2ogr.html"><code>ogr2ogr</code></a> was used to simplify data. See <a href="https://github.com/jikuja/leaflet-suojatiet/blob/master/README.md">README.md</a> for more information.
+    </small>
+</p>
+
+
+<!-- the code -->
 <script>
   var signAttribution =
     'Sign data &copy; <a href="http://www.lounaistieto.fi/blog/2016/03/30/turun-kaupungin-liikennemerkit/">Turun kaupunki</a>, ' +
@@ -48,7 +65,6 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
   var mymap = L.map('mapid', {
     maxZoom: 19
   }).setView([60.440963, 22.25122], 10)
-  var searchParams = new URL(window.location.href).searchParams
 
   var radius = function (zoom) { //
     // clustering is fully disabled by disableClusteringAtZoom option at level xxx
@@ -72,7 +88,6 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
   // make layer visible asap
   osmLayer.addTo(mymap)
 
-
   // add cluster layer
   var clusterGroup = L.markerClusterGroup({
     // attribution in geojsonLayer is ignored => do it here
@@ -82,24 +97,29 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
   })
   mymap.addLayer(clusterGroup)
 
+  // icon to use
   var icon = new L.icon({
     iconUrl: 'arrow.png',
     iconSize:    [25, 41],
     iconAnchor:  [12, 1]
   })
 
-
   // load geojson data into
   var geojsonLayer = new L.GeoJSON.AJAX('suojatiet.geojson', {
     pointToLayer: function(geoJsonPoint, latlng) {
+      // create all markers with predefined icon and apply rotation angle
       marker =  L.marker(latlng, {icon: icon})
       marker.setRotationAngle(geoJsonPoint['properties']['geometry_d'])
       return marker
     }
   })
+
+  // bind click handler
   geojsonLayer.on('click', onMarkerClick)
+  // bind async data load handler
   geojsonLayer.on('data:loaded', function () {
     // add geojson layer into cluster layer after data is loaded
+    // must be done here or data is not visible in the map
     clusterGroup.addLayer(geojsonLayer) // refresh()!?
   })
 
